@@ -10,7 +10,9 @@ import com.paymybuddy.model.User;
 
 public interface IUserService {
 	
-	boolean save(UserDto user);
+	boolean save(UserDto user) throws Exception;
+	
+	User save(User userToBeSaved) throws Exception;
 	
 	AppAccount findByEmail(String email);
 	

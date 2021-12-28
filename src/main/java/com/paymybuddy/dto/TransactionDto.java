@@ -1,23 +1,13 @@
 package com.paymybuddy.dto;
 
+import lombok.Data;
+
+@Data
 public class TransactionDto {
 	
-	private String sender;
-	private String receiver;
+	private String emailSender;
+	private String emailReceiver;
+	private String description;
+	private Double transactionAmount;
 	
-	public String getSender() {
-		return sender;
-	}
-	public void setSender(String sender) {
-		this.sender = sender;
-	}
-	public String getReceiver() {
-		return receiver;
-	}
-	public void setReceiver(String receiver) {
-		this.receiver = receiver;
-	}
-	
-	
-
 }

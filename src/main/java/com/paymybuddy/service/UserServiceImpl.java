@@ -1,5 +1,6 @@
 package com.paymybuddy.service;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +67,23 @@ public class UserServiceImpl implements IUserService {
 	
 	@Override
 	@Transactional
-	public boolean save(UserDto userDto) {
+	public boolean save(UserDto userDto) throws Exception {
+		if (userDto == null) {
+			throw new Exception("A valid user is required");
+		}
+		
+		if (userDto.getAppAccountDto() == null) {
+			throw new Exception("A valid appAccount is required");
+		}
+		
+		if (StringUtils.isEmpty(userDto.getAppAccountDto().getEmail())) {
+			throw new Exception("A valid email is required");
+		}
+		
+		if (appAccountRepository.findByEmail(userDto.getAppAccountDto()
+				.getEmail()) != null) {
+			throw new Exception("An user with this email exists already");
+		}
 		
 		User userToBeSaved = new User();
 		userToBeSaved.setFirstName(userDto.getFirstName());
@@ -88,6 +105,16 @@ public class UserServiceImpl implements IUserService {
 		// save the parent which will save the child (appAccount) as well
 		userRepository.save(userToBeSaved);
 		return true;
+	}
+	
+	@Override
+	@Transactional
+	public User save(User userToBeSaved) throws Exception {
+		if (userToBeSaved == null) {
+			throw new Exception("A valid user is required");
+		}
+		
+		return userRepository.save(userToBeSaved);
 	}
 
 	@Override

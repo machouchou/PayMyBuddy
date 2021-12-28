@@ -11,16 +11,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.paymybuddy.dto.AccountDto;
 import com.paymybuddy.dto.AppAccountDto;
 import com.paymybuddy.dto.FriendDto;
 import com.paymybuddy.dto.UserDto;
 import com.paymybuddy.model.Friend;
+import com.paymybuddy.model.Response;
+import com.paymybuddy.model.User;
+import com.paymybuddy.repository.AccountRepository;
+import com.paymybuddy.service.IAppAccountService;
 import com.paymybuddy.service.IUserService;
+import com.paymybuddy.service.IAccountService;
 
 @Controller
 public class UserController {
@@ -29,6 +37,9 @@ public class UserController {
 
 	@Autowired
 	private IUserService userService;
+	
+	@Autowired
+	private IAccountService accountService;
 	
 	@RequestMapping("/users")
 	@ResponseBody
@@ -41,12 +52,24 @@ public class UserController {
 	
 	@RequestMapping(value="/user")
 	@ResponseBody
-	public ResponseEntity<UserDto> createUser(@NotNull @RequestBody final UserDto user) {
+	public ResponseEntity<Response> createUser(@NotNull @RequestBody final UserDto user) {
 		logger.info("list()");
 		
-		userService.save(user);
+		Response response = new Response();
 		
-		return new ResponseEntity<>(user, HttpStatus.CREATED);
+		try {
+			userService.save(user);
+			response.setData(user);
+			response.setStatus(HttpStatus.OK);
+			response.setError(null);
+		} catch (Exception e) {
+			response.setData(null);
+			response.setStatus(HttpStatus.FORBIDDEN);
+			response.setError(String.format("Creating user failed : %s", e.getMessage()));
+			return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+		}
+		
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
 	@PostMapping(value="/userLogin")
@@ -86,7 +109,7 @@ public class UserController {
 					"Adding friend failed \n" + e.getMessage() , 
 					HttpStatus.FORBIDDEN)	;
 			
-		}
+		} 
 		
 		return response != null ? 
 				new ResponseEntity<>(
@@ -95,5 +118,33 @@ public class UserController {
 				new ResponseEntity<>(
 						"Adding friend failed" , 
 						HttpStatus.FORBIDDEN)	;
+	}
+	
+	@GetMapping("/depositAmount/{email}/{depositMoney}")
+//	@RequestMapping(value="/depositAmount")
+	@ResponseBody
+	public ResponseEntity<Response> addMoneyOnPayMyBuddyAccount(@PathVariable String email, @PathVariable Double depositMoney) {
+// 	public ResponseEntity<Response> addMoneyOnPayMyBuddyAccount(String email, Double depositMoney) {
+		logger.info("addMoney()"); 
+		
+		Response response = new Response();
+		
+		try {
+			User user = accountService.addMoneyOnPayMyBuddyAccount(email, depositMoney);
+			
+			if (user != null && user.getAccountPayMyBuddy() != null) {
+				response.setData(user.getAccountPayMyBuddy().getAmountBalance());
+				response.setStatus(HttpStatus.OK);
+				response.setError(null);
+			} 
+			
+		} catch (Exception e) {
+			response.setData(null);
+			response.setStatus(HttpStatus.BAD_REQUEST);
+			response.setError("Operation add Money Failed : " + e.getMessage());
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}
+			
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

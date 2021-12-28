@@ -66,9 +66,9 @@ public class User {
 			cascade = CascadeType.PERSIST)
 	private AppAccount appAccount;
 
-	/*@OneToOne(mappedBy =  "user", fetch = FetchType.LAZY,
+	@OneToOne(mappedBy =  "user", fetch = FetchType.LAZY,
 			cascade = CascadeType.PERSIST)
-	private Account accountNumber;*/
+	private Account accountPayMyBuddy;
 
 	public User() {
 		super();
