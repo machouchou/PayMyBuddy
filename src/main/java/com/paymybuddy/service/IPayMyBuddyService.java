@@ -1,17 +1,13 @@
 package com.paymybuddy.service;
 
-//import com.paymybuddy.model.Account;
-import com.paymybuddy.model.AppAccount;
-//import com.paymybuddy.model.User;
+import org.springframework.http.ResponseEntity;
+
+import com.paymybuddy.model.Response;
 
 public interface IPayMyBuddyService {
 	
-	//void addAccountNumber(AppAccount appAccount, String accountNumber); rajouter la création du accountNumber en même temps que la création du user
-	
-	boolean transferMoneyToBuddy(String emailSender, String emailReceiver, String description,
-			Double transactionAmount) throws Exception;
-	
-	//void addMoneyFromAccountToPayMyBuddy(User user, Account account, Double amountadded);
+	// PayMyBoddyDto transferMoneyToBuddy(String emailSender, String emailReceiver, String description,
+	//		Double transactionAmount) throws Exception;
 
-	//void sendMoneyFromPayMyBuddyToUserAccount(User user, Account account, Double amountSended);
+	ResponseEntity<Response> transferMoneyToBuddy(String body);
 }

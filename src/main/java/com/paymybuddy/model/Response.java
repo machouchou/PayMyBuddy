@@ -7,5 +7,6 @@ import lombok.Data;
 public class Response {
 	private HttpStatus status;
 	private Object data;
-	private String error;
+	private String errorCode;
+	private String errorDescription;
 }

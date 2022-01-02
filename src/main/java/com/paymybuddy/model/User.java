@@ -54,16 +54,15 @@ public class User {
 	List<Friend> friends = new ArrayList<>();
 	
 	
-	/*@OneToMany(
-		cascade = CascadeType.ALL,
-		orphanRemoval = true,
-		fetch = FetchType.EAGER
-		)
-	@JoinColumn(name = "user_id" )
-	private List<Transaction> transactions = new ArrayList<>();*/
+	@OneToMany(cascade = CascadeType.ALL, 
+			fetch = FetchType.LAZY,
+			mappedBy = "user")
+	private List<Transaction> transactions = new ArrayList<>();
 	
-	@OneToOne(mappedBy =  "user", fetch = FetchType.LAZY,
-			cascade = CascadeType.PERSIST)
+	@OneToOne(cascade = CascadeType.ALL, 
+		fetch = FetchType.LAZY,
+		mappedBy =  "user"
+	)
 	private AppAccount appAccount;
 
 	@OneToOne(mappedBy =  "user", fetch = FetchType.LAZY,

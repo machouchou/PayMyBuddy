@@ -1,8 +1,10 @@
 package com.paymybuddy.model;
 
 import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -40,11 +42,8 @@ public class Transaction {
 	@Column(name = "fees")
 	private double fees;
 	
-	@Column(name = "fk_transaction_user")
-	private int fkTransactionUser;
-	
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "userId")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "userId", nullable = false)
 	private User user;
 
 	public Transaction() {

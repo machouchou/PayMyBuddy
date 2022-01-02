@@ -9,9 +9,9 @@ public interface IAccountService {
 	
 	Optional<Account> getAccountNumber(String accountNumber);
 	
-	//boolean saveAccountNumber(String userEmail, Account userBankAccount);
-	
 	boolean updateAccountNumber(Account accountNumber);
 	
 	User addMoneyOnPayMyBuddyAccount(String email, Double depositAmount) throws Exception;
+	
+	User sendMoneyToMyBankAccount(String email, Double moneyToSend) throws Exception;
 }

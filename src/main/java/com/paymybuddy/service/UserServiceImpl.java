@@ -1,8 +1,9 @@
 package com.paymybuddy.service;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -10,6 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.paymybuddy.dto.AppAccountDto;
@@ -17,10 +20,13 @@ import com.paymybuddy.dto.UserDto;
 import com.paymybuddy.model.AppAccount;
 import com.paymybuddy.model.Friend;
 import com.paymybuddy.model.FriendRelationship;
+import com.paymybuddy.model.Response;
 import com.paymybuddy.model.User;
 import com.paymybuddy.repository.AppAccountRepository;
 import com.paymybuddy.repository.FriendsRepository;
 import com.paymybuddy.repository.UserRepository;
+import com.paymybuddy.utility.Constant;
+import com.paymybuddy.utility.Utility;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -33,6 +39,15 @@ public class UserServiceImpl implements IUserService {
 	@Autowired
 	private FriendsRepository friendRepository;
 	
+	@Autowired
+	private AppAccountRepository appAccountRepository;
+	
+	private Utility utility;
+	
+	public UserServiceImpl() {
+		utility = new Utility();
+	}
+
 	@Override
 	public List<UserDto> findAllUsers() {
 		logger.debug("list()");
@@ -67,22 +82,34 @@ public class UserServiceImpl implements IUserService {
 	
 	@Override
 	@Transactional
-	public boolean save(UserDto userDto) throws Exception {
+	public ResponseEntity<Response> save(UserDto userDto) {
+		Response response = new Response();
+		String errorDescription = "";
+		
 		if (userDto == null) {
-			throw new Exception("A valid user is required");
+			errorDescription = "A valid user is required !";
+			return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_USER_EXISTED, errorDescription);
 		}
 		
 		if (userDto.getAppAccountDto() == null) {
-			throw new Exception("A valid appAccount is required");
+			errorDescription = "A valid appAccount is required !";
+			return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_APP_ACCOUNT_REQUIRED, errorDescription);
 		}
 		
 		if (StringUtils.isEmpty(userDto.getAppAccountDto().getEmail())) {
-			throw new Exception("A valid email is required");
+			errorDescription = "A valid email is required !";
+			return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
+		}
+		
+		if (StringUtils.isEmpty(userDto.getAppAccountDto().getPassword())) {
+			errorDescription = "A valid password is required !";
+			return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_PASSWORD_REQUIRED, errorDescription);
 		}
 		
 		if (appAccountRepository.findByEmail(userDto.getAppAccountDto()
 				.getEmail()) != null) {
-			throw new Exception("An user with this email exists already");
+			errorDescription = "A user with this email already exists !";
+			return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_USER_EXISTED, errorDescription);
 		}
 		
 		User userToBeSaved = new User();
@@ -103,8 +130,22 @@ public class UserServiceImpl implements IUserService {
 		userToBeSaved.setAppAccount(appAccountToBeSaved);
 		
 		// save the parent which will save the child (appAccount) as well
-		userRepository.save(userToBeSaved);
-		return true;
+		User user = userRepository.save(userToBeSaved);
+		
+		// Preparing Response to be send to the client
+		UserDto userSaved = new UserDto(user.getFirstName(),
+				user.getLastName(),
+				user.getBirthDate(),
+				user.getAddress(),
+				user.getCountry());
+		
+		AppAccountDto accountSaved = new AppAccountDto();
+		accountSaved.setEmail(user.getAppAccount().getEmail());
+		userSaved.setAppAccountDto(accountSaved);
+		
+		new Utility().createResponseWithSuccess(response, userSaved);
+		
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
 	@Override
@@ -121,9 +162,6 @@ public class UserServiceImpl implements IUserService {
 	public User update(User user) {
 		return userRepository.save(user) ;
 	}
-	
-	@Autowired
-	private AppAccountRepository appAccountRepository;
 	
 	@Override
 	public Boolean logUser(String email, String password) throws Exception {
@@ -201,5 +239,57 @@ public class UserServiceImpl implements IUserService {
 		friend.setFriendId(friendId);
 		
 		return friendRepository.save(friend);
+	}
+
+
+	@Override
+	public ResponseEntity<Response> getUserFriends(String email) {
+		
+		AppAccount userAccount = findByEmail(email);
+		Response response = new Response();
+		
+		String errorType = "Getting friends";
+		String errorMessage = "";
+		
+		if (userAccount == null) {
+			errorMessage = String.format("There is no user registered with this email (%s).", email);
+			return utility.createResponseWithErrors(errorType, errorMessage);
+		}
+		
+		User user = userAccount.getUser();
+		
+		List<FriendRelationship> friendRelationshipList = user.getFriends()
+			.stream().map(Friend::getFriendId).collect(Collectors.toList());
+		 
+		List<Integer> friendIds = friendRelationshipList.stream()
+			.map(FriendRelationship::getFriendId).collect(Collectors.toList());
+		
+		List<UserDto> listUserFriend = new ArrayList<>();
+		
+		for (Integer id : friendIds) {
+			Optional<User> friend = userRepository.findById(id);
+			
+			if (!friend.isPresent()) {
+				errorMessage = String.format("There is no friend attached to this user (%s %s).",
+						user.getFirstName(), user.getLastName().toUpperCase());
+				return utility.createResponseWithErrors(errorType, errorMessage);
+			}
+			
+			UserDto friendDto = new UserDto();
+			friendDto.setFirstName(friend.get().getFirstName());
+			friendDto.setLastName(friend.get().getLastName());
+			friendDto.setBirthDate(friend.get().getBirthDate());
+			friendDto.setAddress(friend.get().getAddress());
+			friendDto.setCountry(friend.get().getCountry());
+			
+			listUserFriend.add(friendDto);
+		}
+		
+		response.setData(listUserFriend);
+		response.setStatus(HttpStatus.OK);
+		response.setErrorCode(null);
+		response.setErrorDescription(null);
+		
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

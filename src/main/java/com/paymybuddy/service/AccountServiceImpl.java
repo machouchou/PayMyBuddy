@@ -27,22 +27,6 @@ final Logger logger = LogManager.getLogger(AccountServiceImpl.class);
 	public Optional<Account> getAccountNumber(String accountNumber) {
 		return accountRepository.findByAccountNumber(accountNumber);
 	}
-	
-	// creation et Mise à jour du compte bancaire
-	/*@Override
-	public boolean saveAccountNumber(String userEmail, Account userBankAccount) {
-		
-		Account userBankAccountToBeSaved = new Account();
-		userBankAccountToBeSaved.setAccountNumber(userBankAccount.getAccountNumber());
-		userBankAccountToBeSaved.setAmountBalance(userBankAccount.getAmountBalance()); 
-		userBankAccountToBeSaved.setCurrency(userBankAccount.getCurrency()); 
-		
-		userBankAccountToBeSaved.setUser(userService.getUserFromAppAccount(userEmail));
-		
-		accountRepository.save(userBankAccountToBeSaved);
-		
-		return true;
-	}*/
 
 	@Override
 	public boolean updateAccountNumber(Account accountNumber) {
@@ -60,6 +44,9 @@ final Logger logger = LogManager.getLogger(AccountServiceImpl.class);
 		if (userAccount == null || userAccount.getUser() == null)
 			throw new Exception("The email provided is not recognized. Please, check it !");
 		
+		if(depositAmount <= 0)
+			throw new Exception("The deposited Amount is incorrect.");
+		
 		User user =  userAccount.getUser();
 		
 		if (user.getAccountPayMyBuddy() == null)
@@ -69,5 +56,29 @@ final Logger logger = LogManager.getLogger(AccountServiceImpl.class);
 		
 		return userService.save(user);
 		
+	}
+
+	@Override
+	public User sendMoneyToMyBankAccount(String email, Double moneyToSend) throws Exception {
+		
+		AppAccount appAccount = userService.findByEmail(email);
+		
+		if (appAccount == null || appAccount.getUser() == null)
+			throw new Exception("The email provided is not recognized. Please, check it !");
+		
+		if (moneyToSend <= 0)
+			throw new Exception("Money to send is incorrect.");
+		
+		User user = appAccount.getUser();
+		
+		if (user.getAccountPayMyBuddy() == null)
+			throw new Exception("The user bank account does not exist. Please create a new one before !");
+		
+		if (user.getAccountPayMyBuddy().getAmountBalance() < moneyToSend)
+			throw new Exception("Your balance is not enough for the sending. Check and correct");
+		Double fees = 0.005 * moneyToSend;
+		user.getAccountPayMyBuddy().setAmountBalance(user.getAccountPayMyBuddy().getAmountBalance() - (moneyToSend + fees));
+			
+		return userService.save(user);
 	}
 }

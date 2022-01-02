@@ -5,9 +5,8 @@ import lombok.Data;
 @Data
 public class TransactionDto {
 	
-	private String emailSender;
-	private String emailReceiver;
+	private String senderEmail;
+	private String receiverEmail;
 	private String description;
 	private Double transactionAmount;
-	
 }
