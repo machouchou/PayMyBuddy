@@ -14,4 +14,5 @@ public class Constant {
 	public static final String INTERNAL_ERROR = "PMB.InternalError";
 	public static final String JSON_PARSING_IMPOSSIBLE = "PMB.JsonParsingImpossible";
 	public static final String ERROR_TRANSFER_DESCRIPTION_REQUIRED = "PMB.TransferDescriptionRequired";
+	public static final String ERROR_MESSAGE_USER_NOT_FOUND = "PMB.UserEmailAndPasswordRequired";
 }

@@ -45,28 +45,46 @@ public class PayMyBuddyServiceImpl implements IPayMyBuddyService{
 	private ResponseEntity<Response> transferMoneyToBuddy(String senderEmail,
 			String receiverEmail, 
 			String description,
-			Double transactionAmount)  {
+			Double transactionAmount) {
+		String errorDescription = "";
+		
+		if (StringUtils.isEmpty(senderEmail)) {
+			errorDescription = "Sender email is required !";
+			return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
+		}
+		
+		if (StringUtils.isEmpty(receiverEmail)) {
+			errorDescription = "Receiver email is required !";
+			return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
+		}
+		
+		if (transactionAmount == null || transactionAmount <= 0) {
+			errorDescription = "Check your transfered amount.";
+			return utility.createResponseWithErrors(Constant.ERROR_TRANSACTION_AMOUNT_INVALID, errorDescription);
+		}
+		
+		logger.info("Sender email : {}, Receiver email : {}, Description : {}, TransactionAmount : {}", 
+				senderEmail, receiverEmail, description, transactionAmount);
 		
 		User senderUser = userService.getUserFromAppAccount(senderEmail);
 		User receiverUser = userService.getUserFromAppAccount(receiverEmail);
 		User adminUser = userService.getUserFromAppAccount(Constant.ADMIN_EMAIL);
-		String errorDescription = "";
 		
 		if (senderUser == null) {
 			errorDescription = String.format("There is no user attached to the email(%s)", senderEmail);
-			return utility.createResponseWithErrors(errorDescription, Constant.ERROR_NO_USER_FOUND);
+			return utility.createResponseWithErrors(Constant.ERROR_NO_USER_FOUND, errorDescription);
 		}
 		
 		if (receiverUser == null) {
 			errorDescription = String.format("There is no user attached to the email(%s)", receiverEmail);
-			return utility.createResponseWithErrors(errorDescription, Constant.ERROR_NO_USER_FOUND);
+			return utility.createResponseWithErrors(Constant.ERROR_NO_USER_FOUND, errorDescription);
 		}
 		
 		if (senderUser.getAccountPayMyBuddy() != null &&
 				(senderUser.getAccountPayMyBuddy().getAmountBalance() <= 0 
 				|| senderUser.getAccountPayMyBuddy().getAmountBalance() < transactionAmount)) {
 			errorDescription = "Transfer failed, amount available is not enough for this transaction";
-			return utility.createResponseWithErrors(Constant.ERROR_AMOUNT_NOT_ENOUGH,errorDescription);
+			return utility.createResponseWithErrors(Constant.ERROR_AMOUNT_NOT_ENOUGH, errorDescription);
 		}
 		
 		Double fees = new Utility().roundAmount(transactionAmount * Constant.FEES_RATE);
@@ -155,24 +173,6 @@ public class PayMyBuddyServiceImpl implements IPayMyBuddyService{
 				return utility.createResponseWithErrors(Constant.ERROR_TRANSACTION_AMOUNT_INVALID, errorDescription);
 			}
 			Double transactionAmount = transactionNode.asDouble();
-			
-			if (StringUtils.isEmpty(senderEmail)) {
-				errorDescription = "Sender email is required !";
-				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
-			}
-			
-			if (StringUtils.isEmpty(receiverEmail)) {
-				errorDescription = "Receiver email is required !";
-				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
-			}
-			
-			if (transactionAmount == null || transactionAmount <= 0) {
-				errorDescription = "Check your transfered amount.";
-				return utility.createResponseWithErrors(Constant.ERROR_TRANSACTION_AMOUNT_INVALID, errorDescription);
-			}
-			
-			logger.info("Sender email : {}, Receiver email : {}, Description : {}, TransactionAmount : {}", 
-					senderEmail, receiverEmail, description, transactionAmount);
 			
 			return transferMoneyToBuddy(senderEmail, receiverEmail, description, transactionAmount);
 			

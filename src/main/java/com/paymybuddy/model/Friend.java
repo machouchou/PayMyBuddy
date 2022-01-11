@@ -16,7 +16,7 @@ public class Friend {
 	
 	
 	@EmbeddedId
-	FriendRelationship friendId;
+	FriendRelationship friendRelationship;
 
 	@ManyToOne(
 			cascade = CascadeType.ALL
@@ -31,6 +31,6 @@ public class Friend {
 
 	@Override
 	public String toString() {
-		return "Friend [friendId=" + friendId + "]";
+		return "Friend [friendId=" + friendRelationship + "]";
 	}
 }

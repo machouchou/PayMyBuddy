@@ -2,7 +2,10 @@ package com.paymybuddy.service;
 
 import java.util.Optional;
 
+import org.springframework.http.ResponseEntity;
+
 import com.paymybuddy.model.Account;
+import com.paymybuddy.model.Response;
 import com.paymybuddy.model.User;
 
 public interface IAccountService {
@@ -11,7 +14,7 @@ public interface IAccountService {
 	
 	boolean updateAccountNumber(Account accountNumber);
 	
-	User addMoneyOnPayMyBuddyAccount(String email, Double depositAmount) throws Exception;
+	ResponseEntity<Response> addMoneyOnPayMyBuddyAccount(String body) throws Exception;
 	
-	User sendMoneyToMyBankAccount(String email, Double moneyToSend) throws Exception;
+	ResponseEntity<Response> sendMoneyToMyBankAccount(String body) throws Exception;
 }

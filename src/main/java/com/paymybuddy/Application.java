@@ -1,12 +1,13 @@
 package com.paymybuddy;
 
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.ResponseEntity;
 
-import com.paymybuddy.dto.PayMyBoddyDto;
 import com.paymybuddy.model.Response;
 import com.paymybuddy.service.IPayMyBuddyService;
 import com.paymybuddy.service.IUserService;
@@ -15,18 +16,22 @@ import com.paymybuddy.service.UserServiceImpl;
 
 @SpringBootApplication 
 public class Application {
+	
+	private static final Logger LOGGER = LogManager.getLogger("Application");
 
 	public static void main(String[] args) {
-		ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
+		LOGGER.info("Initializing PayMyBuddy");
+		
+		/*ConfigurableApplicationContext context =*/ SpringApplication.run(Application.class, args);
 		
 		// Connexion test of SpringData JPA
-		IUserService userService = context.getBean(UserServiceImpl.class);
+		/*IUserService userService = context.getBean(UserServiceImpl.class);
 		IPayMyBuddyService payService = context.getBean(PayMyBuddyServiceImpl.class);
 		System.out.println("User list : " + userService.findAllUsers());
 		
 		var friends = userService.getUserFriends("tc@gmail.com");
 		
-		ResponseEntity<Response> moneyTransfer = null;
+		ResponseEntity<Response> moneyTransfer = null;*/
 		try {
 			// moneyTransfer = payService.transferMoneyToBuddy(null, "at@live.fr", "Premier transfert", 280.0);
 			// moneyTransfer = payService.transferMoneyToBuddy("jb@gmail.com", null, "Premier transfert", 280.0);

@@ -15,7 +15,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paymybuddy.dto.AppAccountDto;
+import com.paymybuddy.dto.FriendDto;
 import com.paymybuddy.dto.UserDto;
 import com.paymybuddy.model.AppAccount;
 import com.paymybuddy.model.Friend;
@@ -44,8 +47,11 @@ public class UserServiceImpl implements IUserService {
 	
 	private Utility utility;
 	
+	private Response response;
+	
 	public UserServiceImpl() {
 		utility = new Utility();
+		response = new Response();
 	}
 
 	@Override
@@ -83,7 +89,6 @@ public class UserServiceImpl implements IUserService {
 	@Override
 	@Transactional
 	public ResponseEntity<Response> save(UserDto userDto) {
-		Response response = new Response();
 		String errorDescription = "";
 		
 		if (userDto == null) {
@@ -160,29 +165,63 @@ public class UserServiceImpl implements IUserService {
 
 	@Override
 	public User update(User user) {
+		if (user == null) {
+			return null;
+		}
 		return userRepository.save(user) ;
 	}
 	
 	@Override
-	public Boolean logUser(String email, String password) throws Exception {
-	    	
-        if (email == null) {
-            throw new Exception("Authentication failed, your email is required");
-        }
-        
-        if (password == null) {
-        	throw new Exception("Authentication failed, your email is required");
-        }
-        
-        AppAccount appAccount = appAccountRepository.findByEmail(email);
+	public ResponseEntity<Response> logUser(String body) {
+		
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode jsonNode;
+		String errorDescription = "";
+		 AppAccount appAccount = null;
+		try {
+			jsonNode = mapper.readTree(body);
+			
+			JsonNode emailNode = jsonNode.get("email");
+			if (emailNode == null) {
+				errorDescription = "Authentication failed, your email is required";
+				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
+	        }
+			
+			String email = emailNode.asText();
+			
+			JsonNode passwordNode = jsonNode.get("password");
+			if (passwordNode == null) {
+				errorDescription = "Authentication failed, your password is required";
+				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_PASSWORD_REQUIRED, errorDescription);
+	        }
+			String password = passwordNode.asText();
+			
+			if (StringUtils.isEmpty(email)) {
+				errorDescription = "email is required !";
+				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
+			}
+			
+			if (StringUtils.isEmpty(password)) {
+				errorDescription = "password is required !";
+				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_PASSWORD_REQUIRED, errorDescription);
+			}
+		
+         appAccount = appAccountRepository.findByEmail(email);
         
         if (appAccount == null) {
-        	throw new RuntimeException("Authentication failed !");
+        	errorDescription = "Authentication : false !";
+        	return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_USER_NOT_FOUND, errorDescription);
         }
  
         appAccount.setAuthenticated(appAccount.getPassword().equals(password));
+        utility.createResponseWithSuccess(response, appAccount.isAuthenticated());
+       
+		return new ResponseEntity<>(response, HttpStatus.OK);
         
-        return appAccount.isAuthenticated();
+		} catch (Exception e) {
+		return utility.createResponseWithErrors(Constant.INTERNAL_ERROR, e.getMessage());
+		}
+		
 	}
 
 	@Override
@@ -193,52 +232,98 @@ public class UserServiceImpl implements IUserService {
 
 	@Override
 	public User getUserFromAppAccount(String email) {
+		if (findByEmail(email) == null) {
+			return null;
+		}
+			
+		
 		return findByEmail(email).getUser();
 	}
 
 	@Override
-	public Friend addFriend(String userEmail, String friendEmail) throws Exception {
+	public ResponseEntity<Response> addFriend(String body) {
 		
-		if (StringUtils.isEmpty(userEmail)) {
-			throw new Exception("A valid user email is required");
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode jsonNode;
+		String errorDescription = "";
+		try {
+			jsonNode = mapper.readTree(body);
+			
+			JsonNode userEmailNode = jsonNode.get("userEmail");
+			if (userEmailNode == null) {
+				errorDescription = "userEmail is required !";
+				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
+			}
+			
+			String userEmail = userEmailNode.asText();
+			
+			JsonNode friendEmailNode = jsonNode.get("friendEmail");
+			if (friendEmailNode == null) {
+				errorDescription = "friendEmail is required !";
+				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
+			}
+			
+			String friendEmail = friendEmailNode.asText();
+			
+			if (StringUtils.isEmpty(userEmail)) {
+				errorDescription = "A valid user email is required";
+				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
+			}
+			
+			if (StringUtils.isEmpty(friendEmail)) {
+				errorDescription = "A valid friend email is required";
+				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
+			}
+			
+			User userFriend = getUserFromAppAccount(friendEmail);
+			User user = getUserFromAppAccount(userEmail);
+			
+			if (userFriend == null) {
+				errorDescription = "A user friend with this email :" + friendEmail +  " is not found.";
+				return utility.createResponseWithErrors(Constant.ERROR_NO_USER_FOUND, errorDescription);
+			}
+			
+			if (user == null) {
+				errorDescription = "A user with this email :" + userEmail +  " is not found.";
+				return utility.createResponseWithErrors(Constant.ERROR_NO_USER_FOUND, errorDescription);
+			}
+			
+			if (user.getFriends()
+					.stream()
+					.anyMatch(friend -> friend.getFriendRelationship()
+							.getFriendId() == userFriend.getUserId())) {
+				throw new Exception("The current user (" + 
+							user.getFirstName() + " " + 
+							user.getLastName().toUpperCase() + 
+							") is already friend with user (" + 
+							userFriend.getFirstName() + " " + 
+							userFriend.getLastName().toUpperCase() + ").");
+			}
+			
+			Friend friend = new Friend();
+			friend.setUser(user);
+			FriendRelationship friendRelationship = new FriendRelationship();
+			friendRelationship.setUserId(user.getUserId());
+			friendRelationship.setFriendId(userFriend.getUserId());
+			
+			friend.setFriendRelationship(friendRelationship);
+			
+			Friend friendSaved = friendRepository.save(friend);
+			
+			FriendDto friendDto = new FriendDto();
+			friendDto.setFriendEmail(friendEmail);
+			friendDto.setUserEmail(userEmail);
+			friendDto.setFriendId(friendSaved.getFriendRelationship().getFriendId());
+			friendDto.setUserId(friendSaved.getUser().getUserId());
+			
+			utility.createResponseWithSuccess(response, friendDto);
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);
+			
+		} catch (Exception e) {
+			return utility.createResponseWithErrors(Constant.INTERNAL_ERROR, e.getMessage());
 		}
-		
-		if (StringUtils.isEmpty(friendEmail)) {
-			throw new Exception("A valid friend email is required");
-		}
-		
-		User userFriend = getUserFromAppAccount(friendEmail);
-		User user = getUserFromAppAccount(userEmail);
-		
-		if (userFriend == null) {
-			throw new Exception("A user friend with this email :" + friendEmail +  "is not found.");
-		}
-		
-		if (user == null) {
-			throw new Exception("A user with this email :" + userEmail +  "is not found.");
-		}
-		
-		if (user.getFriends()
-				.stream()
-				.anyMatch(friend -> friend.getFriendId()
-						.getFriendId() == userFriend.getUserId())) {
-			throw new Exception("The current user (" + 
-						user.getFirstName() + " " + 
-						user.getLastName().toUpperCase() + 
-						") is already friend with user (" + 
-						userFriend.getFirstName() + " " + 
-						userFriend.getLastName().toUpperCase() + ").");
-		}
-		
-		Friend friend = new Friend();
-		friend.setUser(user);
-		FriendRelationship friendId = new FriendRelationship();
-		friendId.setUserId(user.getUserId());
-		friendId.setFriendId(userFriend.getUserId());
-		
-		friend.setFriendId(friendId);
-		
-		return friendRepository.save(friend);
+			
 	}
 
 
@@ -246,7 +331,6 @@ public class UserServiceImpl implements IUserService {
 	public ResponseEntity<Response> getUserFriends(String email) {
 		
 		AppAccount userAccount = findByEmail(email);
-		Response response = new Response();
 		
 		String errorType = "Getting friends";
 		String errorMessage = "";
@@ -259,7 +343,7 @@ public class UserServiceImpl implements IUserService {
 		User user = userAccount.getUser();
 		
 		List<FriendRelationship> friendRelationshipList = user.getFriends()
-			.stream().map(Friend::getFriendId).collect(Collectors.toList());
+			.stream().map(Friend::getFriendRelationship).collect(Collectors.toList());
 		 
 		List<Integer> friendIds = friendRelationshipList.stream()
 			.map(FriendRelationship::getFriendId).collect(Collectors.toList());
@@ -284,12 +368,8 @@ public class UserServiceImpl implements IUserService {
 			
 			listUserFriend.add(friendDto);
 		}
-		
-		response.setData(listUserFriend);
-		response.setStatus(HttpStatus.OK);
-		response.setErrorCode(null);
-		response.setErrorDescription(null);
-		
+		utility.createResponseWithSuccess(response, listUserFriend);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+	
 }

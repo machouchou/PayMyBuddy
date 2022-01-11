@@ -21,13 +21,13 @@ public interface IUserService {
 	
 	User getUserFromAppAccount(String email);
 	
-	Friend addFriend(String userEmail, String friendEmail) throws Exception;
+	ResponseEntity<Response> addFriend(String body);
 	
 	List<UserDto> findAllUsers();
 	
 	User update(User user);
 	
-	Boolean logUser(String email, String password) throws Exception; 
+	ResponseEntity<Response> logUser(String body); 
 	
 	ResponseEntity<Response> getUserFriends(String email);
 	
