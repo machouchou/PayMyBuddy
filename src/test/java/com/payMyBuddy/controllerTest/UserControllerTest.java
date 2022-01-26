@@ -1,10 +1,10 @@
 package com.payMyBuddy.controllerTest;
 
-import java.text.SimpleDateFormat;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +24,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.paymybuddy.dto.AppAccountDto;
 import com.paymybuddy.dto.UserDto;
-import com.paymybuddy.model.User;
-import com.paymybuddy.repository.UserRepository;
 import com.paymybuddy.service.IUserService;
 
 @SpringBootTest
@@ -54,7 +52,7 @@ public class UserControllerTest {
 	void getUserDtoList() throws Exception {
 		// Arrange
 		String dateString = "01/29/2007";
-		SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 		
 		AppAccountDto appAccount = new AppAccountDto();
 		appAccount.setEmail("ad@gmail.com");
@@ -64,7 +62,7 @@ public class UserControllerTest {
 		UserDto userDto = new UserDto();
 		userDto.setFirstName("Aude");
 		userDto.setLastName("Dupont");
-		//userDto.setBirthDate(formatter.parse(dateString));
+		userDto.setBirthDate(LocalDate.parse(dateString, formatter));
 		userDto.setAddress("21 Rue Fontaine 75009 Paris");
 		userDto.setCountry("France");
 		userDto.setAppAccountDto(appAccount);

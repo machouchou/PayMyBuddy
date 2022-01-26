@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -69,7 +70,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, transfertResult.getBody().getErrorCode());
 		assertEquals("Sender email is required !", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	
 	@Test
@@ -85,7 +86,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, transfertResult.getBody().getErrorCode());
 		assertEquals("Sender email is required !", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	
 	@Test
@@ -101,7 +102,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, transfertResult.getBody().getErrorCode());
 		assertEquals("Receiver email is required !", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	
 	@Test
@@ -117,7 +118,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, transfertResult.getBody().getErrorCode());
 		assertEquals("Receiver email is required !", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	
 	@Test
@@ -133,7 +134,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_TRANSFER_DESCRIPTION_REQUIRED, transfertResult.getBody().getErrorCode());
 		assertEquals("Description is required !", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	@Test
 	public void transferMoney_TransactionAmountNull_ReturnsTransactionAmountRequiredError() {
@@ -148,7 +149,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_TRANSACTION_AMOUNT_INVALID, transfertResult.getBody().getErrorCode());
 		assertEquals("Check your transfered amount.", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	
 	@Test
@@ -164,7 +165,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_TRANSACTION_AMOUNT_INVALID, transfertResult.getBody().getErrorCode());
 		assertEquals("Transfer amount is required.", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	@Test
 	public void transferMoney_SenderUserNull_ReturnsSenderUserRequiredError() {
@@ -179,7 +180,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_NO_USER_FOUND, transfertResult.getBody().getErrorCode());
 		assertEquals("There is no user attached to the email(toto)", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	
 	@Test
@@ -195,7 +196,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_NO_USER_FOUND, transfertResult.getBody().getErrorCode());
 		assertEquals("There is no user attached to the email(tata)", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	@Test
 	public void transferMoney_WithValidBody_TransferSuccessful() throws Exception {
@@ -250,7 +251,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, transfertResult.getBody().getErrorCode());
 		assertEquals("Sender email is required !", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	
 	@Test
@@ -287,7 +288,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, transfertResult.getBody().getErrorCode());
 		assertEquals("Sender email is required !", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	
 	@Test
@@ -303,7 +304,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_TRANSACTION_AMOUNT_INVALID, transfertResult.getBody().getErrorCode());
 		assertEquals("Money to send is required !", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	
 	@Test
@@ -319,7 +320,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_TRANSACTION_AMOUNT_INVALID, transfertResult.getBody().getErrorCode());
 		assertEquals("Money to send is incorrect.", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	@Test
 	public void sendMoneyToMyBankAccount_descriptionNodeNull_ReturnsDescriptionRequiredError() throws Exception {
@@ -334,7 +335,7 @@ public class BankServiceTest {
 		assertNotNull(transfertResult.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_TRANSFER_DESCRIPTION_REQUIRED, transfertResult.getBody().getErrorCode());
 		assertEquals("Description is required !", transfertResult.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
+		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
 	 
 	@Test

@@ -360,11 +360,15 @@ public class UserServiceImpl implements IUserService {
 			}
 			
 			UserDto friendDto = new UserDto();
+			AppAccountDto friendAppAccount = new AppAccountDto();
+			friendAppAccount.setEmail(friend.get().getAppAccount().getEmail());
+			
 			friendDto.setFirstName(friend.get().getFirstName());
 			friendDto.setLastName(friend.get().getLastName());
 			friendDto.setBirthDate(friend.get().getBirthDate());
 			friendDto.setAddress(friend.get().getAddress());
 			friendDto.setCountry(friend.get().getCountry());
+			friendDto.setAppAccountDto(friendAppAccount);
 			
 			listUserFriend.add(friendDto);
 		}

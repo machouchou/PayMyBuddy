@@ -19,11 +19,11 @@ public class Utility {
 	public ResponseEntity<Response> createResponseWithErrors(String errorCode, String errorDescription) {
 		Response response = new Response(); 
 		response.setData(null);
-		response.setStatus(HttpStatus.FORBIDDEN);
+		response.setStatus(HttpStatus.OK);
 		response.setErrorCode(String.format("%s", errorCode));
 		response.setErrorDescription(errorDescription);
 		
-		return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
 	public <T>void createResponseWithSuccess(Response response, T data) {

@@ -5,13 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
@@ -25,8 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import com.paymybuddy.dto.AppAccountDto;
-import com.paymybuddy.dto.FriendDto;
 import com.paymybuddy.dto.UserDto;
 import com.paymybuddy.model.AppAccount;
 import com.paymybuddy.model.Friend;
@@ -34,7 +36,6 @@ import com.paymybuddy.model.FriendRelationship;
 import com.paymybuddy.model.Response;
 import com.paymybuddy.model.User;
 import com.paymybuddy.repository.AppAccountRepository;
-import com.paymybuddy.repository.FriendsRepository;
 import com.paymybuddy.repository.UserRepository;
 import com.paymybuddy.service.IPayMyBuddyService;
 import com.paymybuddy.service.IUserService;
@@ -53,9 +54,6 @@ public class UserServiceTest {
 	
 	@Autowired
 	IPayMyBuddyService payService;
-	
-	@Autowired
-	private FriendsRepository friendRepository;
 	
 	@Autowired
 	AppAccountRepository appAccountRepository;
@@ -79,24 +77,25 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	public void save_userDtoWithUnacceptableDateOfBirth_ThrowsParseException() {
+	public void save_userDtoWithUnacceptableDateOfBirth_ThrowsDateTimeParseException() {
 	// Arrange
 		AppAccountDto appAccountDto = new AppAccountDto();
 		appAccountDto.setEmail("mb@gmail.com");
 		appAccountDto.setPassword("mbmb");
 		String dateString = "toto";
-		SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 		
 		UserDto userDto = new UserDto();		userDto.setFirstName("Marie");
 		userDto.setLastName("Baudrous");
-//		userDto.setAddress("5 Avenue du Général De Gaulle 78600 Maison Laffitte ");
-//		userDto.setCountry("France");
-//		userDto.setAppAccountDto(appAccountDto);
+		userDto.setAddress("5 Avenue du Général De Gaulle 78600 Maison Laffitte ");
+		userDto.setCountry("France");
+		//userDto.setBirthDate(LocalDate.parse(dateString, formatter));
+		userDto.setAppAccountDto(appAccountDto);
 		
-		Assertions.assertThrows(ParseException.class, new Executable() {
+		Assertions.assertThrows(DateTimeParseException.class, new Executable() {
 			@Override
 			public void execute() throws Throwable {
-				userDto.setBirthDate(formatter.parse(dateString));
+				userDto.setBirthDate(LocalDate.parse(dateString, formatter));
 			}
 		});
 	}
@@ -108,18 +107,20 @@ public class UserServiceTest {
 		appAccountDto.setEmail("mb@gmail.com");
 		appAccountDto.setPassword("mbmb");
 		String dateString = "05/11/1973";
-		SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 		
 		UserDto userDto = new UserDto();
 		userDto.setFirstName("Marie");
 		userDto.setLastName("Baudrous");
-		userDto.setBirthDate(formatter.parse(dateString));
+		userDto.setBirthDate(LocalDate.parse(dateString, formatter));
 		userDto.setAddress("5 Avenue du Général De Gaulle 78600 Maison Laffitte ");
 		userDto.setCountry("France");
 		userDto.setAppAccountDto(appAccountDto);
 
 		User user = userService.getUserFromAppAccount("mb@gmail.com");
+		if (user != null) {
 		userRepository.delete(user);
+		}
 		
 		// Act
 		ResponseEntity<Response> saveResult = userService.save(userDto);
@@ -180,7 +181,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, result.getBody().getErrorCode());
 		assertEquals("Authentication failed, your email is required", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -197,7 +198,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_PASSWORD_REQUIRED, result.getBody().getErrorCode());
 		assertEquals("Authentication failed, your password is required", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -214,7 +215,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_USER_NOT_FOUND, result.getBody().getErrorCode());
 		assertEquals("Authentication : false !", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	@Test
 	public void logUser_emailNodeEmpty_returnsLoginFailed() throws Exception {
@@ -230,7 +231,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, result.getBody().getErrorCode());
 		assertEquals("email is required !", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -247,7 +248,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_PASSWORD_REQUIRED, result.getBody().getErrorCode());
 		assertEquals("password is required !", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -280,7 +281,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, result.getBody().getErrorCode());
 		assertEquals("userEmail is required !", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -297,7 +298,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, result.getBody().getErrorCode());
 		assertEquals("friendEmail is required !", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -314,7 +315,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, result.getBody().getErrorCode());
 		assertEquals("A valid user email is required", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -331,7 +332,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, result.getBody().getErrorCode());
 		assertEquals("A valid friend email is required", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -348,7 +349,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_NO_USER_FOUND, result.getBody().getErrorCode());
 		assertEquals("A user with this email :alex is not found.", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -365,7 +366,7 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals(Constant.ERROR_NO_USER_FOUND, result.getBody().getErrorCode());
 		assertEquals("A user friend with this email :mama is not found.", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -419,6 +420,6 @@ public class UserServiceTest {
 		assertNotNull(result.getBody().getErrorCode());
 		assertEquals("Getting friends", result.getBody().getErrorCode());
 		assertEquals("There is no user registered with this email (toto).", result.getBody().getErrorDescription());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 }

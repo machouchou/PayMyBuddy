@@ -1,6 +1,7 @@
 package com.paymybuddy.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Data;
 
@@ -8,7 +9,8 @@ import lombok.Data;
 public class UserDto {
 	private String firstName;
 	private String lastName;
-	private Date birthDate;
+	@JsonFormat(pattern = "dd/MM/yyyy")
+	private LocalDate birthDate;
 	private String address;
 	private String country;
 	private AppAccountDto appAccountDto;
@@ -17,7 +19,7 @@ public class UserDto {
 		super();
 	}
 	
-	public UserDto(String firstName, String lastName, Date birthDate, String address, String country) {
+	public UserDto(String firstName, String lastName, LocalDate birthDate, String address, String country) {
 		super();
 		this.firstName = firstName;
 		this.lastName = lastName;

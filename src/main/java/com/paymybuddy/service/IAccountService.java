@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 
 import com.paymybuddy.model.Account;
 import com.paymybuddy.model.Response;
-import com.paymybuddy.model.User;
 
 public interface IAccountService {
 	
