@@ -80,14 +80,15 @@ public class PayMyBuddyServiceImpl implements IPayMyBuddyService{
 			return utility.createResponseWithErrors(Constant.ERROR_NO_USER_FOUND, errorDescription);
 		}
 		
+		Double fees = new Utility().roundAmount(transactionAmount * Constant.FEES_RATE);
 		if (senderUser.getAccountPayMyBuddy() != null &&
 				(senderUser.getAccountPayMyBuddy().getAmountBalance() <= 0 
-				|| senderUser.getAccountPayMyBuddy().getAmountBalance() < transactionAmount)) {
+				|| senderUser.getAccountPayMyBuddy().getAmountBalance() < (transactionAmount + fees))) {
 			errorDescription = "Transfer failed, amount available is not enough for this transaction";
 			return utility.createResponseWithErrors(Constant.ERROR_AMOUNT_NOT_ENOUGH, errorDescription);
 		}
 		
-		Double fees = new Utility().roundAmount(transactionAmount * Constant.FEES_RATE);
+		
 		senderUser.getAccountPayMyBuddy().setAmountBalance(senderUser.getAccountPayMyBuddy().getAmountBalance() - transactionAmount - fees);
 		receiverUser.getAccountPayMyBuddy().setAmountBalance(receiverUser.getAccountPayMyBuddy().getAmountBalance() + transactionAmount);
 		adminUser.getAccountPayMyBuddy().setAmountBalance(adminUser.getAccountPayMyBuddy()

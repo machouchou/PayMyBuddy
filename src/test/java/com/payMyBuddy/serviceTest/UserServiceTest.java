@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
 import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,11 +30,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.paymybuddy.dto.AppAccountDto;
+import com.paymybuddy.dto.ProfileDto;
+import com.paymybuddy.dto.TransactionDto;
 import com.paymybuddy.dto.UserDto;
 import com.paymybuddy.model.AppAccount;
 import com.paymybuddy.model.Friend;
 import com.paymybuddy.model.FriendRelationship;
 import com.paymybuddy.model.Response;
+import com.paymybuddy.model.Transaction;
 import com.paymybuddy.model.User;
 import com.paymybuddy.repository.AppAccountRepository;
 import com.paymybuddy.repository.UserRepository;
@@ -119,7 +123,7 @@ public class UserServiceTest {
 
 		User user = userService.getUserFromAppAccount("mb@gmail.com");
 		if (user != null) {
-		userRepository.delete(user);
+		 userRepository.delete(user);
 		}
 		
 		// Act
@@ -144,6 +148,7 @@ public class UserServiceTest {
 	@Test
 	public void update_validUser_userUpdated() throws Exception {
 		// Arrange
+	 
 		User user = userService.getUserFromAppAccount("jb@gmail.com");
 		user.setFirstName("James");
 		user.setAddress("8 rue Marcadet 75018 Paris");
@@ -421,5 +426,70 @@ public class UserServiceTest {
 		assertEquals("Getting friends", result.getBody().getErrorCode());
 		assertEquals("There is no user registered with this email (toto).", result.getBody().getErrorDescription());
 		assertEquals(HttpStatus.OK, result.getStatusCode());
+	}
+	
+	@Test
+	public void getUserTransactions_ValidEmail_returnsUserTransactions() throws Exception {
+		
+		/* // Arrange
+		String email = "rg@gmail.com"; 
+		AppAccount userAppAccount = appAccountRepository.findByEmail(email);
+		User user = userAppAccount.getUser();
+		List<Transaction> userTransactionList = user.getTransactions();
+				
+		List<TransactionDto> listUserTransaction = new ArrayList<>();
+		
+		for (Transaction transaction: userTransactionList) {
+			TransactionDto transactionDto = new TransactionDto();
+			AppAccount appAccountReceiver = appAccountRepository.findByEmail(transaction.getEmailReceiver());
+			User receiver = appAccountReceiver.getUser();
+			transactionDto.setFirstName(receiver.getFirstName());
+			transactionDto.setEmail(receiver.getAppAccount().getEmail());
+			transactionDto.setDescription(transaction.getDescription());
+			transactionDto.setAmount(transaction.getAmount());
+			listUserTransaction.add(transactionDto);
+		// Act
+		ResponseEntity <Response> result = userService.getUserTransactions(email);
+		
+		// Assert
+		assertNotNull(result.getBody().getData());
+		assertNull(result.getBody().getErrorCode());
+		assertNull(result.getBody().getErrorDescription());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
+		}*/
+	}
+	
+	@Test
+	public void getUser_ValidEmail_returnsUserProfile() throws Exception {
+		
+		// Arrange
+		String email = "rg@gmail.com"; 
+		AppAccount userAppAccount = appAccountRepository.findByEmail(email);
+		User user = userAppAccount.getUser();
+		
+		ProfileDto profileDto = new ProfileDto();
+		AppAccountDto appAccountDto = new AppAccountDto();
+		
+		profileDto.setFirstName(user.getFirstName());
+		profileDto.setLastName(user.getLastName());
+		profileDto.setAddress(user.getAddress());
+		profileDto.setBirthDate(user.getBirthDate());
+		profileDto.setCountry(user.getCountry());
+		
+		appAccountDto.setEmail(user.getAppAccount().getEmail());
+		appAccountDto.setPassword(user.getAppAccount().getPassword());
+		
+		profileDto.setAppAccountDto(appAccountDto);
+		profileDto.setAmountBalance(user.getAccountPayMyBuddy().getAmountBalance());
+		
+		// Act
+		ResponseEntity <Response> result = userService.getUser(email);
+		
+		// Assert
+		assertNotNull(result.getBody().getData());
+		assertNull(result.getBody().getErrorCode());
+		assertNull(result.getBody().getErrorDescription());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
+	
 	}
 }

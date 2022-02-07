@@ -11,22 +11,31 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paymybuddy.dto.AppAccountDto;
 import com.paymybuddy.dto.FriendDto;
+import com.paymybuddy.dto.ProfileDto;
+import com.paymybuddy.dto.TransactionDto;
 import com.paymybuddy.dto.UserDto;
 import com.paymybuddy.model.AppAccount;
 import com.paymybuddy.model.Friend;
 import com.paymybuddy.model.FriendRelationship;
 import com.paymybuddy.model.Response;
+import com.paymybuddy.model.Transaction;
 import com.paymybuddy.model.User;
 import com.paymybuddy.repository.AppAccountRepository;
 import com.paymybuddy.repository.FriendsRepository;
+import com.paymybuddy.repository.TransactionRepository;
 import com.paymybuddy.repository.UserRepository;
 import com.paymybuddy.utility.Constant;
 import com.paymybuddy.utility.Utility;
@@ -41,6 +50,9 @@ public class UserServiceImpl implements IUserService {
 	
 	@Autowired
 	private FriendsRepository friendRepository;
+	
+	@Autowired
+	private TransactionRepository transactionRepository;
 	
 	@Autowired
 	private AppAccountRepository appAccountRepository;
@@ -235,8 +247,6 @@ public class UserServiceImpl implements IUserService {
 		if (findByEmail(email) == null) {
 			return null;
 		}
-			
-		
 		return findByEmail(email).getUser();
 	}
 
@@ -375,5 +385,69 @@ public class UserServiceImpl implements IUserService {
 		utility.createResponseWithSuccess(response, listUserFriend);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@Override
+	public ResponseEntity<Response> getUserTransactions(String email, Pageable pageable) {
+		AppAccount userAccount = findByEmail(email);
+		
+		String errorType = "Getting userTransactions";
+		String errorMessage = "";
+		
+		if (userAccount == null) {
+			errorMessage = String.format("There is no user registered with this email (%s).", email);
+			return utility.createResponseWithErrors(errorType, errorMessage);
+		}
+		
+		User user = userAccount.getUser();
+		
+		Page<Transaction> userTransactionList = transactionRepository.paginate(email, pageable);
+		
+		List<TransactionDto> userTransactions = new ArrayList<>();
+		
+		
+		for (Transaction transaction : userTransactionList.getContent()) {
+			
+			TransactionDto transactionDto = new TransactionDto();
+			AppAccount appAccountReceiver = findByEmail(transaction.getEmailReceiver());
+			User receiver = appAccountReceiver.getUser();
+			
+			transactionDto.setFirstName(receiver.getFirstName());
+			transactionDto.setEmail(receiver.getAppAccount().getEmail());
+			transactionDto.setDescription(transaction.getDescription());
+			transactionDto.setAmount(transaction.getAmount());
+			
+			userTransactions.add(transactionDto);
+		}
+		utility.createResponseWithSuccess(response, userTransactions);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("x-total-count", Long.toString(userTransactionList.getTotalElements()));
+		
+		return ResponseEntity.ok().headers(headers).body(response);
+	}
 	
+	@Override
+	public ResponseEntity<Response> getUser(String email) {
+					
+			User user = appAccountRepository.findByEmail(email).getUser();
+			
+			ProfileDto profileDto = new ProfileDto();
+			AppAccountDto appAccountDto = new AppAccountDto();
+			
+			profileDto.setFirstName(user.getFirstName());
+			profileDto.setLastName(user.getLastName());
+			profileDto.setAddress(user.getAddress());
+			profileDto.setBirthDate(user.getBirthDate());
+			profileDto.setCountry(user.getCountry());
+			
+			if (user.getAppAccount() != null)
+			{
+				appAccountDto.setEmail(user.getAppAccount().getEmail());
+				appAccountDto.setPassword(user.getAppAccount().getPassword());
+			
+			}
+			profileDto.setAppAccountDto(appAccountDto);
+			profileDto.setAmountBalance(user.getAccountPayMyBuddy().getAmountBalance());
+			utility.createResponseWithSuccess(response, profileDto);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }

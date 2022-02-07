@@ -193,9 +193,10 @@ public class AccountServiceImpl implements IAccountService {
 		if (user.getAccountPayMyBuddy() == null)
 			throw new Exception("The user bank account does not exist. Please create a new one before !");
 		
-		if (user.getAccountPayMyBuddy().getAmountBalance() < depositMoney)
-			throw new Exception("Your balance is not enough for the sending. Check and correct");
 		Double fees = Constant.FEES_RATE * depositMoney;
+		if (user.getAccountPayMyBuddy().getAmountBalance() < (depositMoney + fees))
+			throw new Exception("Your balance is not enough for the sending. Check and correct");
+		
 		user.getAccountPayMyBuddy().setAmountBalance(user.getAccountPayMyBuddy().getAmountBalance() - (depositMoney + fees));
 		adminUser.getAccountPayMyBuddy().setAmountBalance(adminUser.getAccountPayMyBuddy().getAmountBalance() + fees);
 		

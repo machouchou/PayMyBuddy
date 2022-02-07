@@ -353,7 +353,7 @@ public class BankServiceTest {
 		// Assert
 		assertNotNull(transferInfo);
 		assertNull(transfertResult.getBody().getErrorCode());
-		assertEquals(initialUserBalance - fees - 20.0 , transferInfo.getUserAccountBalance());
+		assertEquals(initialUserBalance - (fees + 20.0) , transferInfo.getUserAccountBalance());
 		assertEquals(fees , transferInfo.getFees());
 		assertNull(transfertResult.getBody().getErrorDescription());
 		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
