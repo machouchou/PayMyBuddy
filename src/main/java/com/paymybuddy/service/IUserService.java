@@ -14,7 +14,7 @@ import com.paymybuddy.model.User;
 
 public interface IUserService {
 	
-	ResponseEntity<Response> save(UserDto user);
+	ResponseEntity<Response> saveUser(UserDto user);
 	
 	User save(User userToBeSaved) throws Exception;
 	
@@ -35,5 +35,7 @@ public interface IUserService {
 	ResponseEntity<Response> getUserFriends(String email);
 	
 	ResponseEntity<Response> getUserTransactions(String email, Pageable pageable);
+	
+	
 	
 }

@@ -3,6 +3,7 @@ package com.paymybuddy.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -41,7 +43,7 @@ import com.paymybuddy.utility.Constant;
 import com.paymybuddy.utility.Utility;
 
 @Service
-public class UserServiceImpl implements IUserService {
+public class UserServiceImpl implements IUserService, IValidation {
 	
 	final Logger logger = LogManager.getLogger(UserServiceImpl.class);
 	
@@ -50,6 +52,9 @@ public class UserServiceImpl implements IUserService {
 	
 	@Autowired
 	private FriendsRepository friendRepository;
+	
+	@Autowired
+	BCryptPasswordEncoder encoder;
 	
 	@Autowired
 	private TransactionRepository transactionRepository;
@@ -100,7 +105,7 @@ public class UserServiceImpl implements IUserService {
 	
 	@Override
 	@Transactional
-	public ResponseEntity<Response> save(UserDto userDto) {
+	public ResponseEntity<Response> saveUser(UserDto userDto) {
 		String errorDescription = "";
 		
 		if (userDto == null) {
@@ -113,7 +118,10 @@ public class UserServiceImpl implements IUserService {
 			return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_APP_ACCOUNT_REQUIRED, errorDescription);
 		}
 		
-		if (StringUtils.isEmpty(userDto.getAppAccountDto().getEmail())) {
+		String emailRegex = "^(.+)@(.+)$";
+		
+		if (StringUtils.isEmpty(userDto.getAppAccountDto().getEmail()) ||
+				!userDto.getAppAccountDto().getEmail().matches(emailRegex)) {
 			errorDescription = "A valid email is required !";
 			return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
 		}
@@ -138,7 +146,7 @@ public class UserServiceImpl implements IUserService {
 		
 		AppAccount appAccountToBeSaved = new AppAccount();
 		appAccountToBeSaved.setEmail(userDto.getAppAccountDto().getEmail());
-		appAccountToBeSaved.setPassword(userDto.getAppAccountDto().getPassword());
+		appAccountToBeSaved.setPassword(encoder.encode(userDto.getAppAccountDto().getPassword()));
 		
 		// set child reference
 		appAccountToBeSaved.setUser(userToBeSaved);
@@ -267,6 +275,11 @@ public class UserServiceImpl implements IUserService {
 			
 			String userEmail = userEmailNode.asText();
 			
+			if (StringUtils.isEmpty(userEmail)) {
+				errorDescription = "A valid user email is required";
+				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
+			}
+			
 			JsonNode friendEmailNode = jsonNode.get("friendEmail");
 			if (friendEmailNode == null) {
 				errorDescription = "friendEmail is required !";
@@ -274,11 +287,6 @@ public class UserServiceImpl implements IUserService {
 			}
 			
 			String friendEmail = friendEmailNode.asText();
-			
-			if (StringUtils.isEmpty(userEmail)) {
-				errorDescription = "A valid user email is required";
-				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_EMAIL_REQUIRED, errorDescription);
-			}
 			
 			if (StringUtils.isEmpty(friendEmail)) {
 				errorDescription = "A valid friend email is required";
@@ -298,16 +306,15 @@ public class UserServiceImpl implements IUserService {
 				return utility.createResponseWithErrors(Constant.ERROR_NO_USER_FOUND, errorDescription);
 			}
 			
-			if (user.getFriends()
-					.stream()
-					.anyMatch(friend -> friend.getFriendRelationship()
-							.getFriendId() == userFriend.getUserId())) {
-				throw new Exception("The current user (" + 
-							user.getFirstName() + " " + 
-							user.getLastName().toUpperCase() + 
-							") is already friend with user (" + 
-							userFriend.getFirstName() + " " + 
-							userFriend.getLastName().toUpperCase() + ").");
+			if (checkFriendExistence(userFriend, user)) {
+				errorDescription = "The current user (" + 
+						user.getFirstName() + " " + 
+						user.getLastName().toUpperCase() + 
+						") is already friend with user (" + 
+						userFriend.getFirstName() + " " + 
+						userFriend.getLastName().toUpperCase() + ").";
+				
+				return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_FRIEND_ALREADY_EXITS, errorDescription);
 			}
 			
 			Friend friend = new Friend();
@@ -333,9 +340,16 @@ public class UserServiceImpl implements IUserService {
 		} catch (Exception e) {
 			return utility.createResponseWithErrors(Constant.INTERNAL_ERROR, e.getMessage());
 		}
-			
 	}
 
+	@Override
+	public boolean checkFriendExistence(User userFriend, User user) {
+		
+		return user.getFriends()
+				.stream()
+				.anyMatch(friend -> friend.getFriendRelationship()
+						.getFriendId() == userFriend.getUserId());
+	}
 
 	@Override
 	public ResponseEntity<Response> getUserFriends(String email) {

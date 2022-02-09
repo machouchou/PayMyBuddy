@@ -16,4 +16,5 @@ public class Constant {
 	public static final String ERROR_TRANSFER_DESCRIPTION_REQUIRED = "PMB.TransferDescriptionRequired";
 	public static final String ERROR_MESSAGE_USER_NOT_FOUND = "PMB.UserEmailAndPasswordRequired";
 	public static final String ERROR_MESSAGE_FIRSTNAME_REQUIRED = "PMB.UserFirstName";
+	public static final String ERROR_MESSAGE_FRIEND_ALREADY_EXITS = "PMB.FriendAlreadyExists";
 }

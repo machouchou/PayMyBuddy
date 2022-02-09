@@ -4,20 +4,21 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -26,23 +27,24 @@ import org.junit.rules.ExpectedException;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.paymybuddy.dto.AppAccountDto;
 import com.paymybuddy.dto.ProfileDto;
-import com.paymybuddy.dto.TransactionDto;
 import com.paymybuddy.dto.UserDto;
 import com.paymybuddy.model.AppAccount;
 import com.paymybuddy.model.Friend;
 import com.paymybuddy.model.FriendRelationship;
 import com.paymybuddy.model.Response;
-import com.paymybuddy.model.Transaction;
 import com.paymybuddy.model.User;
 import com.paymybuddy.repository.AppAccountRepository;
+import com.paymybuddy.repository.FriendsRepository;
 import com.paymybuddy.repository.UserRepository;
 import com.paymybuddy.service.IPayMyBuddyService;
 import com.paymybuddy.service.IUserService;
+import com.paymybuddy.service.IValidation;
 import com.paymybuddy.utility.Constant;
 
 @SpringBootTest
@@ -62,10 +64,23 @@ public class UserServiceTest {
 	@Autowired
 	AppAccountRepository appAccountRepository;
 	
+	@Autowired
+	FriendsRepository friendRepository;
+	
+	IValidation validation;
+	
 	@Rule
 	public ExpectedException exceptionThrown = ExpectedException.none();
 	
-		List<UserDto> lUser;
+	List<UserDto> lUser;
+	
+	@BeforeEach
+	public void setup() {
+		validation = mock(IValidation.class);
+		friendRepository = mock(FriendsRepository.class);
+	}
+	
+		
 	
 	@Test
 	public void findAllUsers() throws Exception {
@@ -108,26 +123,26 @@ public class UserServiceTest {
 	public void save_newValidUserDto_UserExistsInLUserFindAllUsers() throws ParseException {
 	// Arrange
 		AppAccountDto appAccountDto = new AppAccountDto();
-		appAccountDto.setEmail("mb@gmail.com");
-		appAccountDto.setPassword("mbmb");
-		String dateString = "05/11/1973";
+		appAccountDto.setEmail("marie.b@gmail.com");
+		appAccountDto.setPassword("marie");
+		String dateString = "05/09/1973";
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 		
 		UserDto userDto = new UserDto();
 		userDto.setFirstName("Marie");
-		userDto.setLastName("Baudrous");
+		userDto.setLastName("Billard");
 		userDto.setBirthDate(LocalDate.parse(dateString, formatter));
 		userDto.setAddress("5 Avenue du Général De Gaulle 78600 Maison Laffitte ");
 		userDto.setCountry("France");
 		userDto.setAppAccountDto(appAccountDto);
 
-		User user = userService.getUserFromAppAccount("mb@gmail.com");
+		User user = userService.getUserFromAppAccount("marie.b@gmail.com");
 		if (user != null) {
 		 userRepository.delete(user);
 		}
 		
 		// Act
-		ResponseEntity<Response> saveResult = userService.save(userDto);
+		ResponseEntity<Response> saveResult = userService.saveUser(userDto);
 		List<UserDto> lUser = userService.findAllUsers();
 		
 		// Assert
@@ -159,18 +174,14 @@ public class UserServiceTest {
 		assertEquals("8 rue Marcadet 75018 Paris", userSaved.getAddress());
 	}
 	
-	/*@Test
+	@Test
 	public void save_nullUser_userNotSaved() throws Exception {
-		// Arrange
-		User user =userService.getUserFromAppAccount("toto");
-		//user.setFirstName("");
-		//user.setAddress("");
 		// Act
-		User userSaved = userService.save(user);
+		ResponseEntity<Response> response = userService.saveUser(null);
 		// Assert
-		Assertions.assertEquals(null, userSaved);
-		//assertEquals(null, userSaved.getAddress());
-	}*/
+		assertNull(response.getBody().getData());
+		assertEquals(Constant.ERROR_MESSAGE_USER_EXISTED, response.getBody().getErrorCode());
+	}
 	
 	@Test
 	public void logUser_emailNodeNull_returnsLoginFailed() throws Exception {
@@ -273,6 +284,41 @@ public class UserServiceTest {
 	}
 	
 	@Test
+	public void addFriend_validUserEmail_returnsAddingFriendSuccedded() throws Exception {
+		
+		// Arrange
+		String userEmail = "tc@gmail.com";
+		String friendEmail = "jb@gmail.com";
+		String body = "{\"userEmail\":\"tc@gmail.com\", \"friendEmail\":\"jb@gmail.com\"}";
+		AppAccount userAppAccount = appAccountRepository.findByEmail(userEmail);
+		User user = userAppAccount.getUser();
+		
+		AppAccount friendAppAccount = appAccountRepository.findByEmail(friendEmail);
+		User userFriend = friendAppAccount.getUser();
+		
+		when(validation.checkFriendExistence(userFriend, user)).thenReturn(false);
+		
+		Friend friend = new Friend();
+		friend.setUser(user);
+		FriendRelationship friendRelationship = new FriendRelationship();
+		friendRelationship.setUserId(user.getUserId());
+		friendRelationship.setFriendId(userFriend.getUserId());
+		
+		friend.setFriendRelationship(friendRelationship);
+		when(friendRepository.save(friend)).thenReturn(friend);
+		
+		// Act
+		ResponseEntity<Response> result = userService.addFriend(body);
+		
+		// Assert
+		Assertions.assertNotEquals(Collections.EMPTY_LIST, result.getBody());
+		assertNotNull(result.getBody().getData());
+		assertNull(result.getBody().getErrorCode());
+		assertNull(result.getBody().getErrorDescription());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
+	}
+	
+	@Test
 	public void addFriend_userEmailNodeNull_returnsAddingFriendImpossible() throws Exception {
 		
 		// Arrange
@@ -362,7 +408,7 @@ public class UserServiceTest {
 		
 		// Arrange
 		String body = "{\"userEmail\":\"hc@gmail.com\", \"friendEmail\":\"mama\"}";
-		
+						
 		// Act
 		ResponseEntity<Response> result = userService.addFriend(body);
 		
@@ -387,27 +433,15 @@ public class UserServiceTest {
 		List<Integer> friendIds = friendRelationshipList.stream()
 				.map(FriendRelationship::getFriendId).collect(Collectors.toList());
 		
-		List<UserDto> listUserFriend = new ArrayList<>();
-		
-		for (Integer id : friendIds) {
-			Optional<User> friend = userRepository.findById(id);
-			
-			UserDto friendDto = new UserDto();
-			friendDto.setFirstName(friend.get().getFirstName());
-			friendDto.setLastName(friend.get().getLastName());
-			friendDto.setBirthDate(friend.get().getBirthDate());
-			friendDto.setAddress(friend.get().getAddress());
-			friendDto.setCountry(friend.get().getCountry());
-			listUserFriend.add(friendDto);
 		// Act
 		ResponseEntity <Response> result = userService.getUserFriends(email);
 		
 		// Assert
+		Assertions.assertNotEquals(Collections.EMPTY_LIST, result.getBody());
 		assertNotNull(result.getBody().getData());
 		assertNull(result.getBody().getErrorCode());
 		assertNull(result.getBody().getErrorDescription());
 		assertEquals(HttpStatus.OK, result.getStatusCode());
-		}
 	}
 	
 	@Test
@@ -415,7 +449,6 @@ public class UserServiceTest {
 		
 		// Arrange
 		String email = "toto"; 
-		//AppAccount userAppAccount = appAccountRepository.findByEmail(email);
 		
 		// Act
 		ResponseEntity <Response> result = userService.getUserFriends(email);
@@ -431,32 +464,28 @@ public class UserServiceTest {
 	@Test
 	public void getUserTransactions_ValidEmail_returnsUserTransactions() throws Exception {
 		
-		/* // Arrange
-		String email = "rg@gmail.com"; 
-		AppAccount userAppAccount = appAccountRepository.findByEmail(email);
-		User user = userAppAccount.getUser();
-		List<Transaction> userTransactionList = user.getTransactions();
-				
-		List<TransactionDto> listUserTransaction = new ArrayList<>();
+		// Arrange
+		String senderEmail = "ep@gmail.com"; 
+		String body = "{\"senderEmail\":\"ep@gmail.com\", \"receiverEmail\":\"id@gmail.com\", \"description\":\"cadeau anniversaire\", \"transactionAmount\":75.0}";
 		
-		for (Transaction transaction: userTransactionList) {
-			TransactionDto transactionDto = new TransactionDto();
-			AppAccount appAccountReceiver = appAccountRepository.findByEmail(transaction.getEmailReceiver());
-			User receiver = appAccountReceiver.getUser();
-			transactionDto.setFirstName(receiver.getFirstName());
-			transactionDto.setEmail(receiver.getAppAccount().getEmail());
-			transactionDto.setDescription(transaction.getDescription());
-			transactionDto.setAmount(transaction.getAmount());
-			listUserTransaction.add(transactionDto);
+		AppAccount userAppAccount = appAccountRepository.findByEmail(senderEmail);
+		User user = userAppAccount.getUser();
+		
+		ResponseEntity <Response> transaction = payService.transferMoneyToBuddy(body);
+		
+		// List<Transaction> userTransactionList = user.getTransactions();
+				
+		// List<TransactionDto> listUserTransaction = new ArrayList<>();
+		
 		// Act
-		ResponseEntity <Response> result = userService.getUserTransactions(email);
+		ResponseEntity <Response> result = userService.getUserTransactions(senderEmail, Pageable.unpaged());
 		
 		// Assert
+		Assertions.assertNotEquals(Collections.EMPTY_LIST, result.getBody());
 		assertNotNull(result.getBody().getData());
 		assertNull(result.getBody().getErrorCode());
 		assertNull(result.getBody().getErrorDescription());
 		assertEquals(HttpStatus.OK, result.getStatusCode());
-		}*/
 	}
 	
 	@Test

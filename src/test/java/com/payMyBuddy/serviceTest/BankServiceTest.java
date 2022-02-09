@@ -232,7 +232,7 @@ public class BankServiceTest {
 		
 		// Act
 		lAccountNumber.addAll(accountRepository.findAll());
-		
+				
 		Assertions.assertNotEquals(Collections.EMPTY_LIST, lAccountNumber.size());
 		
 		assertTrue(lAccountNumber.stream().anyMatch(user ->accountNumber.equalsIgnoreCase(accountNumber)));
@@ -362,7 +362,7 @@ public class BankServiceTest {
 	/*@Test
 	public void sendMoneyToMyBankAccount_WithInValidBody_ReturnsSendedMoneyFailed() throws Exception {
 		// Arrange
-		String body = "tata";
+		String body = null;
 				
 		// Act
 		ResponseEntity<Response> transfertResult = accountService.sendMoneyToMyBankAccount(body);
@@ -372,4 +372,6 @@ public class BankServiceTest {
 		assertEquals(Constant.JSON_PARSING_IMPOSSIBLE, transfertResult.getBody().getErrorCode());
 		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
 	}*/
+	
+	
 }

@@ -54,7 +54,7 @@ public class UserController {
 	@ResponseBody
 	public ResponseEntity<Response> createUser(@NotNull @RequestBody final UserDto user) {
 		logger.info("createUser()");
-		return userService.save(user);
+		return userService.saveUser(user);
 	}
 	
 	@PostMapping(value="/userLogin")
