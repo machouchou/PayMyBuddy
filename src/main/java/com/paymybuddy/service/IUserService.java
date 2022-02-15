@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
-import com.paymybuddy.dto.ProfileDto;
 import com.paymybuddy.dto.UserDto;
 import com.paymybuddy.model.AppAccount;
 import com.paymybuddy.model.Response;
@@ -36,6 +35,6 @@ public interface IUserService {
 	
 	ResponseEntity<Response> getUserTransactions(String email, Pageable pageable);
 	
-	
+	public boolean checkFriendExistence(User userFriend, User user);
 	
 }

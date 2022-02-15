@@ -4,7 +4,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.text.ParseException;
@@ -15,16 +14,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.migrationsupport.rules.EnableRuleMigrationSupport;
 import org.junit.rules.ExpectedException;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Pageable;
@@ -44,11 +42,10 @@ import com.paymybuddy.repository.FriendsRepository;
 import com.paymybuddy.repository.UserRepository;
 import com.paymybuddy.service.IPayMyBuddyService;
 import com.paymybuddy.service.IUserService;
-import com.paymybuddy.service.IValidation;
 import com.paymybuddy.utility.Constant;
 
 @SpringBootTest
-@ExtendWith(MockitoExtension.class)
+@RunWith(MockitoJUnitRunner.class)
 @EnableRuleMigrationSupport
 public class UserServiceTest {
 	
@@ -67,20 +64,10 @@ public class UserServiceTest {
 	@Autowired
 	FriendsRepository friendRepository;
 	
-	IValidation validation;
-	
 	@Rule
 	public ExpectedException exceptionThrown = ExpectedException.none();
 	
 	List<UserDto> lUser;
-	
-	@BeforeEach
-	public void setup() {
-		validation = mock(IValidation.class);
-		friendRepository = mock(FriendsRepository.class);
-	}
-	
-		
 	
 	@Test
 	public void findAllUsers() throws Exception {
@@ -296,8 +283,6 @@ public class UserServiceTest {
 		AppAccount friendAppAccount = appAccountRepository.findByEmail(friendEmail);
 		User userFriend = friendAppAccount.getUser();
 		
-		when(validation.checkFriendExistence(userFriend, user)).thenReturn(false);
-		
 		Friend friend = new Friend();
 		friend.setUser(user);
 		FriendRelationship friendRelationship = new FriendRelationship();
@@ -305,8 +290,8 @@ public class UserServiceTest {
 		friendRelationship.setFriendId(userFriend.getUserId());
 		
 		friend.setFriendRelationship(friendRelationship);
-		when(friendRepository.save(friend)).thenReturn(friend);
 		
+		// friendRepository.delete(friend);
 		// Act
 		ResponseEntity<Response> result = userService.addFriend(body);
 		

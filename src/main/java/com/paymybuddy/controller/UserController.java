@@ -1,6 +1,7 @@
 package com.paymybuddy.controller;
 
 import java.util.List;
+
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
@@ -18,10 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.paymybuddy.dto.ProfileDto;
 import com.paymybuddy.dto.UserDto;
 import com.paymybuddy.model.Response;
-import com.paymybuddy.model.User;
 import com.paymybuddy.service.IUserService;
 
 @Controller
@@ -59,7 +58,6 @@ public class UserController {
 	
 	@PostMapping(value="/userLogin")
 	@ResponseBody
-	//public ResponseEntity<String> authenticateUser(@RequestBody @Valid AppAccountDto account) throws JsonProcessingException
 	public ResponseEntity<Response> authenticateUser(@NotNull @RequestBody String body) {
 		logger.info("Post /loginUser called");
 		return userService.logUser(body);

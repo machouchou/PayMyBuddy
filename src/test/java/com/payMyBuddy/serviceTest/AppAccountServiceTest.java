@@ -14,12 +14,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.paymybuddy.dto.UserDto;
 import com.paymybuddy.model.AppAccount;
 import com.paymybuddy.repository.AppAccountRepository;
-import com.paymybuddy.service.AppAccountServiceImpl;
 import com.paymybuddy.service.IAppAccountService;
-import com.paymybuddy.service.IUserService;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)

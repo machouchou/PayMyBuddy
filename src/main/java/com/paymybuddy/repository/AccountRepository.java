@@ -11,9 +11,7 @@ import com.paymybuddy.model.Account;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Integer>{
-	
-//	@Query("SELECT a FROM Account a WHERE a.accountNumber = ?1" )
-//  @Query("FROM Account a WHERE a.accountNumber = ?1")
+
 	@Query("SELECT a FROM Account a WHERE a.accountNumber = :accountNum" )
 	Optional<Account> findByAccountNumber(@Param("accountNum") String accountNumber);
 	

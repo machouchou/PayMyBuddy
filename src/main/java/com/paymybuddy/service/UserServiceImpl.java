@@ -3,7 +3,6 @@ package com.paymybuddy.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -17,10 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +39,7 @@ import com.paymybuddy.utility.Constant;
 import com.paymybuddy.utility.Utility;
 
 @Service
-public class UserServiceImpl implements IUserService, IValidation {
+public class UserServiceImpl implements IUserService {
 	
 	final Logger logger = LogManager.getLogger(UserServiceImpl.class);
 	
@@ -52,9 +48,6 @@ public class UserServiceImpl implements IUserService, IValidation {
 	
 	@Autowired
 	private FriendsRepository friendRepository;
-	
-	@Autowired
-	BCryptPasswordEncoder encoder;
 	
 	@Autowired
 	private TransactionRepository transactionRepository;
@@ -107,7 +100,6 @@ public class UserServiceImpl implements IUserService, IValidation {
 	@Transactional
 	public ResponseEntity<Response> saveUser(UserDto userDto) {
 		String errorDescription = "";
-		
 		if (userDto == null) {
 			errorDescription = "A valid user is required !";
 			return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_USER_EXISTED, errorDescription);
@@ -138,6 +130,7 @@ public class UserServiceImpl implements IUserService, IValidation {
 		}
 		
 		User userToBeSaved = new User();
+		
 		userToBeSaved.setFirstName(userDto.getFirstName());
 		userToBeSaved.setLastName(userDto.getLastName());
 		userToBeSaved.setAddress(userDto.getAddress());
@@ -146,7 +139,7 @@ public class UserServiceImpl implements IUserService, IValidation {
 		
 		AppAccount appAccountToBeSaved = new AppAccount();
 		appAccountToBeSaved.setEmail(userDto.getAppAccountDto().getEmail());
-		appAccountToBeSaved.setPassword(encoder.encode(userDto.getAppAccountDto().getPassword()));
+		appAccountToBeSaved.setPassword(userDto.getAppAccountDto().getPassword());
 		
 		// set child reference
 		appAccountToBeSaved.setUser(userToBeSaved);
@@ -341,8 +334,7 @@ public class UserServiceImpl implements IUserService, IValidation {
 			return utility.createResponseWithErrors(Constant.INTERNAL_ERROR, e.getMessage());
 		}
 	}
-
-	@Override
+	
 	public boolean checkFriendExistence(User userFriend, User user) {
 		
 		return user.getFriends()
@@ -351,6 +343,7 @@ public class UserServiceImpl implements IUserService, IValidation {
 						.getFriendId() == userFriend.getUserId());
 	}
 
+	
 	@Override
 	public ResponseEntity<Response> getUserFriends(String email) {
 		
