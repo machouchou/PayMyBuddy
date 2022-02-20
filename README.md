@@ -4,9 +4,9 @@ Openclassrooms project number 6
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![Home-Page] (/images/imgPMB.png)
+![Home-Page](/images/imgPMB.png)
 
-Paiement application Pay My Buddy. Th
+Paiement application Pay My Buddy.
 
 Project goals:
 * Create database tables.
@@ -19,7 +19,7 @@ Project goals:
 ![database](/images/DiagUmlPayMyBuddy.png)
 
 
-### Built With
+### Technical :
 
 * Framework: Spring Data JPA
 * Java 08

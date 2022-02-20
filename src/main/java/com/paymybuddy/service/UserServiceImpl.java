@@ -1,5 +1,6 @@
 package com.paymybuddy.service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import javax.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jasypt.contrib.org.apache.commons.codec_1_3.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -139,7 +141,12 @@ public class UserServiceImpl implements IUserService {
 		
 		AppAccount appAccountToBeSaved = new AppAccount();
 		appAccountToBeSaved.setEmail(userDto.getAppAccountDto().getEmail());
-		appAccountToBeSaved.setPassword(userDto.getAppAccountDto().getPassword());
+		try {
+			appAccountToBeSaved.setPassword(new String(Base64.encodeBase64(userDto.getAppAccountDto().getPassword().getBytes()), "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		// set child reference
 		appAccountToBeSaved.setUser(userToBeSaved);
@@ -226,7 +233,7 @@ public class UserServiceImpl implements IUserService {
         	return utility.createResponseWithErrors(Constant.ERROR_MESSAGE_USER_NOT_FOUND, errorDescription);
         }
  
-        appAccount.setAuthenticated(appAccount.getPassword().equals(password));
+        appAccount.setAuthenticated(appAccount.getPassword().equals(new String(Base64.encodeBase64(password.getBytes()), "UTF-8")));
         utility.createResponseWithSuccess(response, appAccount.isAuthenticated());
        
 		return new ResponseEntity<>(response, HttpStatus.OK);
