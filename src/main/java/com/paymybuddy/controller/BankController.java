@@ -33,7 +33,6 @@ public class BankController {
 	@PostMapping("/depositAmount")
 	@ResponseBody
 	public ResponseEntity<Response> addMoneyOnPayMyBuddyAccount(@RequestBody String body) throws Exception {
-// 	public ResponseEntity<Response> addMoneyOnPayMyBuddyAccount(String email, Double depositMoney)
 		logger.info("addMoney()"); 
 		return accountService.addMoneyOnPayMyBuddyAccount(body);
 	}
@@ -47,7 +46,6 @@ public class BankController {
 	
 	@RequestMapping(value="/sendMoney")
 	@ResponseBody
-	// public ResponseEntity<Response> sendMoneyToMyBankAccount(@NotNull @RequestParam String email, Double moneyToSend)
 	public ResponseEntity<Response> sendMoneyToMyBankAccount(@NotNull @RequestBody String body) throws Exception {
 		logger.info("sendMoney()");
 		return accountService.sendMoneyToMyBankAccount(body);

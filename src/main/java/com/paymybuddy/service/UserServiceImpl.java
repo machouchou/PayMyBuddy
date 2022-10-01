@@ -144,7 +144,6 @@ public class UserServiceImpl implements IUserService {
 		try {
 			appAccountToBeSaved.setPassword(new String(Base64.encodeBase64(userDto.getAppAccountDto().getPassword().getBytes()), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
