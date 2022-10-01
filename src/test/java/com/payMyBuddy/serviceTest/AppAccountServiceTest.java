@@ -43,21 +43,6 @@ public class AppAccountServiceTest {
 		assertEquals("Smith", appAccount.getUser().getFirstName());
 	}
 	
-	/*@Test
-	public void save() throws Exception {
-		// Arrange
-		String email = "sj@free.fr";
-		String password = "jd2jd";
-				
-		// Act
-		AppAccount appAccount = appAccountService.save(appAccount);
-		
-		// Assert
-		Assertions.assertNotEquals(Collections.EMPTY_LIST, appAccount);
-		
-		assertEquals("Smith", appAccount.getUser().getFirstName());
-	}*/
-	
 	@Test
 	public void findAll() throws Exception {
 		// Arrange

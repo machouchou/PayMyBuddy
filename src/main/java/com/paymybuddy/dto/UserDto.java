@@ -28,4 +28,54 @@ public class UserDto {
 		this.address = address;
 		this.country = country;
 	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public LocalDate getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(LocalDate birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public AppAccountDto getAppAccountDto() {
+		return appAccountDto;
+	}
+
+	public void setAppAccountDto(AppAccountDto appAccountDto) {
+		this.appAccountDto = appAccountDto;
+	}
+	
+	
 }

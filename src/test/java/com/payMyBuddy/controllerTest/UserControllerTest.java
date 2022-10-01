@@ -75,9 +75,6 @@ public class UserControllerTest {
 				.get("/users")
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
-				/*.andExpect(content().string("[{\"firstName\":\"Aude\",\"lastName\":\"Dupont\",\"address\":\"21 Rue Fontaine 75009 Paris\",\"Country\":\"France\","
-						+ "}]"));*/
-		
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -92,7 +89,6 @@ public class UserControllerTest {
 					.post("/user")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content("{\"firstName\":\"James\", \"lastName\":\"Boyd\", \"birthDate\":\"01/29/2007\", \"address\":\"21 Rue Fontaine 75009 Paris\", \"Country\":\"France\"}"));
-					//.andExpect(status().isOk());
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}

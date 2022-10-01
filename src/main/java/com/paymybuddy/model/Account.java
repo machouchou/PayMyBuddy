@@ -43,6 +43,56 @@ public class Account {
 		super();
 		this.accountNumber = accountNumber;
 	}
+
+
+	public int getAccountId() {
+		return accountId;
+	}
+
+
+	public void setAccountId(int accountId) {
+		this.accountId = accountId;
+	}
+
+
+	public String getAccountNumber() {
+		return accountNumber;
+	}
+
+
+	public void setAccountNumber(String accountNumber) {
+		this.accountNumber = accountNumber;
+	}
+
+
+	public double getAmountBalance() {
+		return amountBalance;
+	}
+
+
+	public void setAmountBalance(double amountBalance) {
+		this.amountBalance = amountBalance;
+	}
+
+
+	public String getCurrency() {
+		return currency;
+	}
+
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
+
+
+	public User getUser() {
+		return user;
+	}
+
+
+	public void setUser(User user) {
+		this.user = user;
+	}
 	
 
 }

@@ -20,9 +20,6 @@ public class BankControllerTest {
 	 @Qualifier
 		MockMvc mvc;
 		
-		//@Autowired
-		// private WebApplicationContext webContext;
-		
 		@Test
 		public void addMoneyOnPayMyBuddyAccount_WithValidBody_AddingMoneySuccessful() throws Exception {
 			// Arrange

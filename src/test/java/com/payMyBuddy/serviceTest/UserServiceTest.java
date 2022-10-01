@@ -95,7 +95,6 @@ public class UserServiceTest {
 		userDto.setLastName("Baudrous");
 		userDto.setAddress("5 Avenue du Général De Gaulle 78600 Maison Laffitte ");
 		userDto.setCountry("France");
-		//userDto.setBirthDate(LocalDate.parse(dateString, formatter));
 		userDto.setAppAccountDto(appAccountDto);
 		
 		Assertions.assertThrows(DateTimeParseException.class, new Executable() {
@@ -291,7 +290,6 @@ public class UserServiceTest {
 		
 		friend.setFriendRelationship(friendRelationship);
 		
-		// friendRepository.delete(friend);
 		// Act
 		ResponseEntity<Response> result = userService.addFriend(body);
 		
@@ -457,10 +455,6 @@ public class UserServiceTest {
 		User user = userAppAccount.getUser();
 		
 		ResponseEntity <Response> transaction = payService.transferMoneyToBuddy(body);
-		
-		// List<Transaction> userTransactionList = user.getTransactions();
-				
-		// List<TransactionDto> listUserTransaction = new ArrayList<>();
 		
 		// Act
 		ResponseEntity <Response> result = userService.getUserTransactions(senderEmail, Pageable.unpaged());

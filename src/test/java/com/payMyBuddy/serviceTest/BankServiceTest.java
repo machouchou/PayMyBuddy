@@ -358,20 +358,4 @@ public class BankServiceTest {
 		assertNull(transfertResult.getBody().getErrorDescription());
 		assertEquals(HttpStatus.OK, transfertResult.getStatusCode());
 	}
-	
-	/*@Test
-	public void sendMoneyToMyBankAccount_WithInValidBody_ReturnsSendedMoneyFailed() throws Exception {
-		// Arrange
-		String body = null;
-				
-		// Act
-		ResponseEntity<Response> transfertResult = accountService.sendMoneyToMyBankAccount(body);
-		// Assert
-		assertNull(transfertResult.getBody().getData());
-		assertNotNull(transfertResult.getBody().getErrorCode());
-		assertEquals(Constant.JSON_PARSING_IMPOSSIBLE, transfertResult.getBody().getErrorCode());
-		assertEquals(HttpStatus.FORBIDDEN, transfertResult.getStatusCode());
-	}*/
-	
-	
 }

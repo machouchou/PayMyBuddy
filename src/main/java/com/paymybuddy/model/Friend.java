@@ -29,6 +29,27 @@ public class Friend {
 		super();
 	}
 
+	
+	public FriendRelationship getFriendRelationship() {
+		return friendRelationship;
+	}
+
+
+	public void setFriendRelationship(FriendRelationship friendRelationship) {
+		this.friendRelationship = friendRelationship;
+	}
+
+
+	public User getUser() {
+		return user;
+	}
+
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+
 	@Override
 	public String toString() {
 		return "Friend [friendId=" + friendRelationship + "]";

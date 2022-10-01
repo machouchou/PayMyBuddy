@@ -73,6 +73,107 @@ public class User {
 		super();
 	}
 
+	
+	public int getUserId() {
+		return userId;
+	}
+
+
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+
+	public String getLastName() {
+		return lastName;
+	}
+
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+
+	public LocalDate getBirthDate() {
+		return birthDate;
+	}
+
+
+	public void setBirthDate(LocalDate birthDate) {
+		this.birthDate = birthDate;
+	}
+
+
+	public String getAddress() {
+		return address;
+	}
+
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+
+	public String getCountry() {
+		return country;
+	}
+
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+
+	public List<Friend> getFriends() {
+		return friends;
+	}
+
+
+	public void setFriends(List<Friend> friends) {
+		this.friends = friends;
+	}
+
+
+	public List<Transaction> getTransactions() {
+		return transactions;
+	}
+
+
+	public void setTransactions(List<Transaction> transactions) {
+		this.transactions = transactions;
+	}
+
+
+	public AppAccount getAppAccount() {
+		return appAccount;
+	}
+
+
+	public void setAppAccount(AppAccount appAccount) {
+		this.appAccount = appAccount;
+	}
+
+
+	public Account getAccountPayMyBuddy() {
+		return accountPayMyBuddy;
+	}
+
+
+	public void setAccountPayMyBuddy(Account accountPayMyBuddy) {
+		this.accountPayMyBuddy = accountPayMyBuddy;
+	}
+
+
 	@Override
 	public String toString() {
 		return "User [firstName=" + firstName + ", lastName=" + lastName + ", birthDate=" + birthDate + ", address="

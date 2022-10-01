@@ -27,17 +27,14 @@ public class Application {
 		
 		ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
 		
-		// Connexion test of SpringData JPA
 		IAppAccountService appAccountService = context.getBean(AppAccountServiceImpl.class);
 		
 		List<AppAccount> listAppAccount = appAccountService.findAll();
 		
 		for (AppAccount appAccount : listAppAccount) {
 			
-			
 			appAccount.setPassword(new String(Base64.encodeBase64(appAccount.getPassword().getBytes()), "UTF-8"));
 			
-			// appAccountService.save(appAccount);
 		}
 		
 	}
